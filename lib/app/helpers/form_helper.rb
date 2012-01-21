@@ -11,7 +11,9 @@ module JqueryDatepicker
       dp_options, tf_options =  input_tag.split_options(options)
       tf_options[:value] = input_tag.format_date(tf_options[:value], String.new(dp_options[:dateFormat])) if  tf_options.has_key?(:value) && dp_options.has_key?(:dateFormat)
       html = input_tag.to_input_field_tag("text", tf_options)
-      html += javascript_tag("jQuery(document).ready(function(){jQuery('##{input_tag.get_name_and_id["id"]}').datepicker(#{dp_options.to_json})});")
+      
+      content_for :javascripts, javascript_tag("jQuery(document).ready(function(){jQuery('##{input_tag.get_name_and_id["id"]}').datepicker(#{dp_options.to_json})});")
+      
       html.html_safe
     end
 
@@ -48,7 +50,11 @@ class JqueryDatepicker::InstanceTag < ActionView::Helpers::InstanceTag
   
   def format_date(tb_formatted, format)
     new_format = translate_format(format)
-    Date.parse(tb_formatted).strftime(new_format)
+    begin
+      Date.parse(tb_formatted).strftime(new_format)
+    rescue ArgumentError
+      tb_formatted
+    end
   end
 
   # Method that translates the datepicker date formats, defined in (http://docs.jquery.com/UI/Datepicker/formatDate)
